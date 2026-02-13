@@ -119,3 +119,36 @@ class Claim(models.Model):
             + self.mostly_true_count
             + self.pants_on_fire_count
         )
+
+
+class UserReport(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        REVIEWED = "reviewed", "Reviewed"
+        RESOLVED = "resolved", "Resolved"
+
+    class RiskLevel(models.TextChoices):
+        LOW = "low", "Low"
+        MEDIUM = "medium", "Medium"
+        HIGH = "high", "High"
+        UNKNOWN = "unknown", "Unknown"
+
+    statement_text = models.TextField()
+    speaker = models.CharField(max_length=100, blank=True, default="")
+    report_reason = models.TextField(blank=True, default="")
+
+    # Filled by scoring logic later (start simple now)
+    risk_score = models.FloatField(default=0.0)
+    risk_level = models.CharField(
+        max_length=10, choices=RiskLevel.choices, default=RiskLevel.UNKNOWN
+    )
+
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.OPEN
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Report #{self.id} ({self.status})"
