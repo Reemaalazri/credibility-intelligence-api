@@ -6,6 +6,8 @@ from .models import Claim, UserReport
 from .serializers import ClaimSerializer, UserReportSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ClaimFilter
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
@@ -22,11 +24,19 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
         filters.OrderingFilter,
     ]
     filterset_class = ClaimFilter
-
     search_fields = ["statement", "speaker", "subjects", "context"]
-    filterset_fields = ["label", "party", "state", "split"]
     ordering_fields = ["id", "created_at", "speaker", "label"]
     ordering = ["-created_at"]
+
+    @action(detail=False, methods=["get"], url_path="by-speaker/(?P<speaker>[^/.]+)")
+    def by_speaker(self, request, speaker=None):
+        """
+        Retrieve claims by speaker name.
+        Example: /api/claims/by-speaker/obama
+        """
+        claims = Claim.objects.filter(speaker__icontains=speaker)
+        serializer = self.get_serializer(claims, many=True)
+        return Response(serializer.data)
 
 
 class UserReportViewSet(viewsets.ModelViewSet):
