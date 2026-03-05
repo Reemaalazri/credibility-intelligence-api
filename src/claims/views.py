@@ -28,14 +28,25 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["id", "created_at", "speaker", "label"]
     ordering = ["-created_at"]
 
-    @action(detail=False, methods=["get"], url_path="by-speaker/(?P<speaker>[^/.]+)")
+    @action(detail=False, methods=["get"], url_path=r"by-speaker/(?P<speaker>[^/.]+)")
     def by_speaker(self, request, speaker=None):
         """
-        Retrieve claims by speaker name.
-        Example: /api/claims/by-speaker/obama
+        Retrieve claims by speaker (case-insensitive substring match),
+        with the same pagination/filtering/ordering behaviour as the main list.
+        Example: /api/claims/by-speaker/obama?label=false&ordering=-created_at
         """
-        claims = Claim.objects.filter(speaker__icontains=speaker)
-        serializer = self.get_serializer(claims, many=True)
+        qs = self.get_queryset().filter(speaker__icontains=speaker)
+
+        # Apply any query param filters (label, party, state, split, etc.) via ClaimFilter
+        qs = self.filter_queryset(qs)
+
+        # Apply pagination like the main /api/claims/
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
 
