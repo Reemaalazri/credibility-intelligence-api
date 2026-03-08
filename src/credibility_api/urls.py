@@ -17,9 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from claims.score import score_claim
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("claims.urls")),
+    path("api/score/", score_claim),
 ]
