@@ -219,7 +219,7 @@ def score_text(text: str, request=None, top_k: int = 6) -> Dict:
         if shared_tokens < 2:
             continue
 
-        stance, stance_score = _classify_stance(text, evidence_text, sim)
+        stance, stance_score = _classify_stance(text, evidence_text, sim) 
 
         # only keep strong support/refute evidence
         if stance == "unrelated":

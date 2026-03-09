@@ -9,7 +9,7 @@ from .factcheck import search_google_factcheck
 
 
 def _to_100(x):
-    return int(round(float(x) * 100))
+    return max(0, min(100, int(round(float(x) * 100))))
 
 
 def _external_verdict(cred_score_100: int, conf_score_100: int) -> str:
