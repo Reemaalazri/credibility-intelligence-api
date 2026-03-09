@@ -21,6 +21,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from claims.score import score_claim
+from claims.views import RegisterView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -32,10 +33,10 @@ urlpatterns = [
     path("api/", include("claims.urls")),
     path("api/score/", score_claim),
 
+    path("api/auth/register/", RegisterView.as_view(), name="auth-register"),
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
     path("api-auth/", include("rest_framework.urls")),
 ]
-git add src/claims/views.py src/claims/score.py src/claims/throttles.py src/credibility_api/settings.py src/credibility_api/urls.py requirements.txt
