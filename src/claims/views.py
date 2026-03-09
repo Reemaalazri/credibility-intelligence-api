@@ -8,6 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .filters import ClaimFilter
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 
 
 class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
@@ -17,6 +18,7 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Claim.objects.all()
     # queryset = Claim.objects.all().order_by("id")
     serializer_class = ClaimSerializer
+    permission_classes = [AllowAny]
 
     filter_backends = [
         DjangoFilterBackend,
@@ -59,3 +61,8 @@ class UserReportViewSet(viewsets.ModelViewSet):
     search_fields = ["statement_text", "speaker", "report_reason"]
     filterset_fields = ["status", "risk_level"]
     ordering_fields = ["created_at", "risk_score"]
+
+    def get_permissions(self):
+        if self.action in ["create", "list", "retrieve"]:
+            return [IsAuthenticated()]
+        return [IsAdminUser()]

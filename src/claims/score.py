@@ -1,11 +1,15 @@
 import os
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 from rest_framework import status
 
 from .scoring import score_text
 from .factcheck import search_google_factcheck
+
+from rest_framework.permissions import IsAuthenticated
+
+from .throttles import ScoreRateThrottle
 
 
 def _to_100(x):
@@ -23,6 +27,8 @@ def _external_verdict(cred_score_100: int, conf_score_100: int) -> str:
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@throttle_classes([ScoreRateThrottle])
 def score_claim(request):
     text = (request.data.get("text") or "").strip()
     if not text:
