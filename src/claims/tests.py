@@ -213,3 +213,24 @@ class APISecurityTests(APITestCase):
             format="json",
         )
         self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
+
+    def test_claims_filter_by_label(self):
+        response = self.client.get("/api/claims/?label=false")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_claims_search(self):
+        response = self.client.get("/api/claims/?search=vaccine")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_claims_ordering(self):
+        response = self.client.get("/api/claims/?ordering=speaker")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_claims_pagination(self):
+        response = self.client.get("/api/claims/?page=1")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("results", response.data)
+
+    def test_claims_by_speaker_filtered(self):
+        response = self.client.get("/api/claims/by-speaker/test-speaker/?label=false")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
