@@ -38,6 +38,7 @@ class APISecurityTests(APITestCase):
         )
 
         self.report = UserReport.objects.create(
+            user=self.user,
             statement_text="Vaccines cause autism.",
             speaker="test-speaker",
             report_reason="Misleading health claim",
@@ -234,3 +235,51 @@ class APISecurityTests(APITestCase):
     def test_claims_by_speaker_filtered(self):
         response = self.client.get("/api/claims/by-speaker/test-speaker/?label=false")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_register_user(self):
+        response = self.client.post(
+            "/api/auth/register/",
+            {
+                "username": "newuser",
+                "email": "newuser@example.com",
+                "password": "NewPass123!"
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_report_create_attaches_user(self):
+        self.authenticate_user()
+        payload = {
+            "statement_text": "Earth is flat",
+            "speaker": "someone",
+            "report_reason": "Scientifically false",
+            "risk_score": 95,
+            "risk_level": "high",
+            "status": "open",
+        }
+        response = self.client.post("/api/reports/", payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["user"], self.user.id)
+
+    def test_user_only_sees_own_reports(self):
+        other_user = User.objects.create_user(username="otheruser", password="OtherPass123!")
+        other_report = UserReport.objects.create(
+            user=other_user,
+            statement_text="Other report",
+            speaker="other",
+            report_reason="other reason",
+            risk_score=50,
+            risk_level="medium",
+            status="open",
+        )
+
+        self.authenticate_user()
+        response = self.client.get("/api/reports/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # user should only see their own reports
+        returned_ids = [item["id"] for item in response.data["results"]] if "results" in response.data else [item["id"] for item in response.data]
+
+        self.assertIn(self.report.id, returned_ids)
+        self.assertNotIn(other_report.id, returned_ids)  # current self.report has no owner unless you update setup
