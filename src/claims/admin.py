@@ -4,3 +4,4 @@ from .models import Claim, UserReport
 
 admin.site.register(Claim)
 admin.site.register(UserReport)
+
