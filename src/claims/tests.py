@@ -102,19 +102,19 @@ class APISecurityTests(APITestCase):
         response = self.client.get(f"/api/reports/{self.report.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_report_update_blocked_for_non_admin(self):
+    def test_report_update_blocked_for_owner(self):
         self.authenticate_user()
         response = self.client.patch(
             f"/api/reports/{self.report.id}/",
-            {"status": "closed"},
+            {"status": "reviewed"},
             format="json",
         )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_report_delete_blocked_for_non_admin(self):
+    def test_report_delete_blocked_for_owner(self):
         self.authenticate_user()
         response = self.client.delete(f"/api/reports/{self.report.id}/")
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_report_update_allowed_for_admin(self):
         self.authenticate_user(username="adminuser", password="AdminPass123!")
@@ -131,6 +131,24 @@ class APISecurityTests(APITestCase):
         self.authenticate_user(username="adminuser", password="AdminPass123!")
         response = self.client.delete(f"/api/reports/{self.report.id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_report_update_blocked_for_non_owner(self):
+        other_user = User.objects.create_user(username="otheruser2", password="OtherPass123!")
+        self.authenticate_user(username="otheruser2", password="OtherPass123!")
+
+        response = self.client.patch(
+            f"/api/reports/{self.report.id}/",
+            {"status": "reviewed"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_report_delete_blocked_for_non_owner(self):
+        other_user = User.objects.create_user(username="otheruser3", password="OtherPass123!")
+        self.authenticate_user(username="otheruser3", password="OtherPass123!")
+
+        response = self.client.delete(f"/api/reports/{self.report.id}/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # -------------------------
     # Score endpoint permissions / validation
