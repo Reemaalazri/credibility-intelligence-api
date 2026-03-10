@@ -39,6 +39,18 @@ class UserReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["user", "created_at", "updated_at"]
 
+    def validate(self, attrs):
+        request = self.context.get("request")
+
+        if request and not request.user.is_staff:
+            if self.instance:
+                if "status" in attrs:
+                    attrs["status"] = self.instance.status
+            else:
+                attrs.pop("status", None)
+
+        return attrs
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
