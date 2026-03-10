@@ -147,8 +147,11 @@ REST_FRAMEWORK = {
     ],
 
     "DEFAULT_THROTTLE_RATES": {} if TESTING else {
-        "anon": "20/hour",
-        "user": "200/hour",
+        "anon": "100/hour",
+        "user": "500/hour",
         "score": "15/hour",
     },
 }
+
+LOGIN_REDIRECT_URL = "/api/"
+LOGOUT_REDIRECT_URL = "/api/"
