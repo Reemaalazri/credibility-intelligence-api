@@ -291,7 +291,15 @@ credibility-intelligence-api/
 
 ## API Documentation
 Full API documentation is available here:
-[API Documentation](API_DOCS.md)
+- [API Documentation (Markdown)](API_DOCS.md)
+- [API Documentation (PDF)](API_DOCS.pdf)
+
+A generated OpenAPI schema is also included:
+- [OpenAPI Schema](schema.yml)
+
+Interactive documentation is available locally when the server is running:
+- `/api/schema/swagger-ui/`
+- `/api/schema/redoc/`
 
 ## Generative AI Usage
 Generative AI tools were used during development for:
