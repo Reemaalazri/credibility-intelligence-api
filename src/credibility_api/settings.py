@@ -170,6 +170,8 @@ SPECTACULAR_SETTINGS = {
 LOGIN_REDIRECT_URL = "/api/"
 LOGOUT_REDIRECT_URL = "/api/"
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOWED_ORIGINS = [
     "https://credibility-intelligence-frontend.onrender.com",
     "http://127.0.0.1:5500",
