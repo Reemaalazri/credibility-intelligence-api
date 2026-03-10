@@ -22,6 +22,7 @@ from django.contrib import admin
 from django.urls import path, include
 from claims.score import score_claim
 from claims.views import RegisterView
+from claims.home import home
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -35,6 +36,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    path("", home, name="home"),
     path("admin/", admin.site.urls),
     path("api/", include("claims.urls")),
     path("api/score/", score_claim),
