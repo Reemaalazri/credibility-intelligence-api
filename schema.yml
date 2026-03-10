@@ -1,0 +1,938 @@
+openapi: 3.0.3
+info:
+  title: Credibility Intelligence API
+  version: 1.0.0
+  description: A REST API for browsing claims analysing credibility scores, and managing
+    user reports.
+paths:
+  /api/:
+    get:
+      operationId: root_retrieve
+      description: API root endpoint listing the main available API routes.
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiRoot'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/auth/token/:
+    post:
+      operationId: auth_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/token/verify/:
+    post:
+      operationId: auth_token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/claims/:
+    get:
+      operationId: claims_list
+      description: Read-only endpoints for dataset claims.
+      parameters:
+      - in: query
+        name: label
+        schema:
+          type: string
+          enum:
+          - barely-true
+          - 'false'
+          - half-true
+          - mostly-true
+          - pants-fire
+          - 'true'
+        description: |-
+          Truthfulness label from LIAR dataset.
+
+          * `true` - true
+          * `mostly-true` - mostly-true
+          * `half-true` - half-true
+          * `barely-true` - barely-true
+          * `false` - false
+          * `pants-fire` - pants-fire
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: party
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: speaker_contains
+        schema:
+          type: string
+      - in: query
+        name: speaker_exact
+        schema:
+          type: string
+      - in: query
+        name: split
+        schema:
+          type: string
+          enum:
+          - test
+          - train
+          - valid
+        description: |-
+          Dataset split (train/valid/test).
+
+          * `train` - Train
+          * `valid` - Validation
+          * `test` - Test
+      - in: query
+        name: state
+        schema:
+          type: string
+      - in: query
+        name: statement_contains
+        schema:
+          type: string
+      tags:
+      - claims
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedClaimList'
+          description: ''
+  /api/claims/{id}/:
+    get:
+      operationId: claims_retrieve
+      description: Read-only endpoints for dataset claims.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this claim.
+        required: true
+      tags:
+      - claims
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+  /api/claims/by-speaker/{speaker}/:
+    get:
+      operationId: claims_by_speaker_retrieve
+      description: |-
+        Retrieve claims by speaker (case-insensitive substring match),
+        with the same pagination/filtering/ordering behaviour as the main list.
+        Example: /api/claims/by-speaker/obama?label=false&ordering=-created_at
+      parameters:
+      - in: path
+        name: speaker
+        schema:
+          type: string
+          description: Speaker name/id (as in dataset).
+        required: true
+      tags:
+      - claims
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+          description: ''
+  /api/reports/:
+    get:
+      operationId: reports_list
+      description: CRUD endpoints for user reports.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: risk_level
+        schema:
+          type: string
+          enum:
+          - high
+          - low
+          - medium
+          - unknown
+        description: |-
+          * `low` - Low
+          * `medium` - Medium
+          * `high` - High
+          * `unknown` - Unknown
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - open
+          - resolved
+          - reviewed
+        description: |-
+          * `open` - Open
+          * `reviewed` - Reviewed
+          * `resolved` - Resolved
+      tags:
+      - reports
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserReportList'
+          description: ''
+    post:
+      operationId: reports_create
+      description: CRUD endpoints for user reports.
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserReport'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReport'
+          description: ''
+  /api/reports/{id}/:
+    get:
+      operationId: reports_retrieve
+      description: CRUD endpoints for user reports.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user report.
+        required: true
+      tags:
+      - reports
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReport'
+          description: ''
+    put:
+      operationId: reports_update
+      description: CRUD endpoints for user reports.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user report.
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserReport'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReport'
+          description: ''
+    patch:
+      operationId: reports_partial_update
+      description: CRUD endpoints for user reports.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user report.
+        required: true
+      tags:
+      - reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserReport'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserReport'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserReport'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserReport'
+          description: ''
+    delete:
+      operationId: reports_destroy
+      description: CRUD endpoints for user reports.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user report.
+        required: true
+      tags:
+      - reports
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/score/:
+    post:
+      operationId: score_create
+      description: Analyse the credibility of a claim and return a credibility/risk
+        summary.
+      tags:
+      - score
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+            examples:
+              ScoreRequestExample:
+                value:
+                  text: vaccines cause autism
+                summary: Score request example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScoreRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreResponse'
+              examples:
+                ScoreResponseExample:
+                  value:
+                    claim: vaccines cause autism
+                    summary:
+                      final_verdict: likely_false
+                      final_credibility_score: 18
+                      final_risk_score: 82
+                      final_confidence: 74
+                    local_analysis: {}
+                    external_analysis: {}
+                    fusion: {}
+                  summary: Score response example
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+components:
+  schemas:
+    ApiRoot:
+      type: object
+      properties:
+        claims:
+          type: string
+          format: uri
+        reports:
+          type: string
+          format: uri
+        score:
+          type: string
+          format: uri
+        register:
+          type: string
+          format: uri
+        login:
+          type: string
+          format: uri
+      required:
+      - claims
+      - login
+      - register
+      - reports
+      - score
+    Claim:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        id:
+          type: integer
+          readOnly: true
+        liar_id:
+          type: string
+          description: Dataset statement id (e.g., 12134.json).
+          maxLength: 50
+        label:
+          allOf:
+          - $ref: '#/components/schemas/LabelEnum'
+          description: |-
+            Truthfulness label from LIAR dataset.
+
+            * `true` - true
+            * `mostly-true` - mostly-true
+            * `half-true` - half-true
+            * `barely-true` - barely-true
+            * `false` - false
+            * `pants-fire` - pants-fire
+        statement:
+          type: string
+          description: The claim text / statement.
+        subjects:
+          type: string
+          description: Comma-separated subjects/topics.
+          maxLength: 255
+        speaker:
+          type: string
+          description: Speaker name/id (as in dataset).
+          maxLength: 100
+        speaker_job_title:
+          type: string
+          description: Speaker job title (may be empty).
+          maxLength: 150
+        state:
+          type: string
+          description: State information (may be empty).
+          maxLength: 60
+        party:
+          type: string
+          description: Party affiliation (may be empty, e.g., republican/democrat/none).
+          maxLength: 60
+        barely_true_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        false_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        half_true_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        mostly_true_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        pants_on_fire_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        context:
+          type: string
+          description: Context/venue/location of the statement.
+          maxLength: 255
+        split:
+          allOf:
+          - $ref: '#/components/schemas/SplitEnum'
+          description: |-
+            Dataset split (train/valid/test).
+
+            * `train` - Train
+            * `valid` - Validation
+            * `test` - Test
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - label
+      - liar_id
+      - split
+      - statement
+      - url
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    LabelEnum:
+      enum:
+      - 'true'
+      - mostly-true
+      - half-true
+      - barely-true
+      - 'false'
+      - pants-fire
+      type: string
+      description: |-
+        * `true` - true
+        * `mostly-true` - mostly-true
+        * `half-true` - half-true
+        * `barely-true` - barely-true
+        * `false` - false
+        * `pants-fire` - pants-fire
+    PaginatedClaimList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+    PaginatedUserReportList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserReport'
+    PatchedUserReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        statement_text:
+          type: string
+        speaker:
+          type: string
+          maxLength: 100
+        report_reason:
+          type: string
+        risk_score:
+          type: number
+          format: double
+        risk_level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+      required:
+      - password
+      - username
+    RiskLevelEnum:
+      enum:
+      - low
+      - medium
+      - high
+      - unknown
+      type: string
+      description: |-
+        * `low` - Low
+        * `medium` - Medium
+        * `high` - High
+        * `unknown` - Unknown
+    ScoreRequest:
+      type: object
+      properties:
+        text:
+          type: string
+      required:
+      - text
+    ScoreResponse:
+      type: object
+      properties:
+        claim:
+          type: string
+        summary:
+          $ref: '#/components/schemas/ScoreSummary'
+        local_analysis: {}
+        external_analysis: {}
+        fusion: {}
+      required:
+      - claim
+      - external_analysis
+      - fusion
+      - local_analysis
+      - summary
+    ScoreSummary:
+      type: object
+      properties:
+        final_verdict:
+          type: string
+        final_credibility_score:
+          type: integer
+        final_risk_score:
+          type: integer
+        final_confidence:
+          type: integer
+      required:
+      - final_confidence
+      - final_credibility_score
+      - final_risk_score
+      - final_verdict
+    SplitEnum:
+      enum:
+      - train
+      - valid
+      - test
+      type: string
+      description: |-
+        * `train` - Train
+        * `valid` - Validation
+        * `test` - Test
+    StatusEnum:
+      enum:
+      - open
+      - reviewed
+      - resolved
+      type: string
+      description: |-
+        * `open` - Open
+        * `reviewed` - Reviewed
+        * `resolved` - Resolved
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    UserReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        statement_text:
+          type: string
+        speaker:
+          type: string
+          maxLength: 100
+        report_reason:
+          type: string
+        risk_score:
+          type: number
+          format: double
+        risk_level:
+          $ref: '#/components/schemas/RiskLevelEnum'
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - statement_text
+      - updated_at
+      - user
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
