@@ -74,6 +74,16 @@ class UserReportViewSet(viewsets.ModelViewSet):
 
         return UserReport.objects.filter(user=self.request.user).order_by("-created_at")
 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_permissions(self):
+        if self.action in ["create", "list", "retrieve"]:
+            return [IsAuthenticated()]
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [IsOwnerOrAdmin()]
+        return [IsAuthenticated()]
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
