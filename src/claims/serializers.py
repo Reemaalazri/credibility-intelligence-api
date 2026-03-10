@@ -55,3 +55,34 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+
+
+class ApiRootSerializer(serializers.Serializer):
+    claims = serializers.URLField()
+    reports = serializers.URLField()
+    score = serializers.URLField()
+    register = serializers.URLField()
+    login = serializers.URLField()
+
+
+class ScoreRequestSerializer(serializers.Serializer):
+    text = serializers.CharField()
+
+
+class ScoreSummarySerializer(serializers.Serializer):
+    final_verdict = serializers.CharField()
+    final_credibility_score = serializers.IntegerField()
+    final_risk_score = serializers.IntegerField()
+    final_confidence = serializers.IntegerField()
+
+
+class ScoreResponseSerializer(serializers.Serializer):
+    claim = serializers.CharField()
+    summary = ScoreSummarySerializer()
+    local_analysis = serializers.JSONField()
+    external_analysis = serializers.JSONField()
+    fusion = serializers.JSONField()
+
+
+class ErrorResponseSerializer(serializers.Serializer):
+    error = serializers.CharField()

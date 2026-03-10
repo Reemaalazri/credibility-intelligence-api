@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -138,6 +139,7 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
     ],
 
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
 
@@ -151,6 +153,13 @@ REST_FRAMEWORK = {
         "user": "500/hour",
         "score": "15/hour",
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Credibility Intelligence API",
+    "DESCRIPTION": "A REST API for browsing claims analysing credibility scores, and managing user reports.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 LOGIN_REDIRECT_URL = "/api/"

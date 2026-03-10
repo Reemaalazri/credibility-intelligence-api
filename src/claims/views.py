@@ -1,6 +1,4 @@
 # from django.shortcuts import render
-
-# Create your views here.
 from rest_framework import viewsets, filters, generics
 from .models import Claim, UserReport
 from .serializers import ClaimSerializer, UserReportSerializer, RegisterSerializer
@@ -11,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
 from .permissions import IsOwnerOrAdmin
+
 
 class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -57,25 +56,23 @@ class UserReportViewSet(viewsets.ModelViewSet):
     """
     CRUD endpoints for user reports.
     """
+    queryset = UserReport.objects.none()
     serializer_class = UserReportSerializer
     search_fields = ["statement_text", "speaker", "report_reason"]
     filterset_fields = ["status", "risk_level"]
     ordering_fields = ["created_at", "risk_score"]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return UserReport.objects.none()
+
         if self.request.user.is_staff:
             return UserReport.objects.all().order_by("-created_at")
+
+        if not self.request.user.is_authenticated:
+            return UserReport.objects.none()
+
         return UserReport.objects.filter(user=self.request.user).order_by("-created_at")
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def get_permissions(self):
-        if self.action in ["create", "list", "retrieve"]:
-            return [IsAuthenticated()]
-        if self.action in ["update", "partial_update", "destroy"]:
-            return [IsOwnerOrAdmin()]
-        return [IsAuthenticated()]
 
 
 class RegisterView(generics.CreateAPIView):

@@ -14,10 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
-# {"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3MzEwMTk2MSwiaWF0IjoxNzczMDE1NTYxLCJqdGkiOiJkYWIxMGQ1MjQ5MzM0NDExYmFkYmY4ODlmNjk2ZmQ1MSIsInVzZXJfaWQiOiIxIn0.sjyWAc5l6EKkWofTx67Olj-HiNYpZD_D4W31nSAb-JM",
-# "access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzczMDE1ODYxLCJpYXQiOjE3NzMwMTU1NjEsImp0aSI6ImFjMTBmZGM2MWQ4NzQ0MDhiMmFhZGNjZDY0Y2UxNTJkIiwidXNlcl9pZCI6IjEifQ.z1VzIWibb_98AVevIFP_z-UaCoum4Ni_tZNoiZONg3g"}% 
 # admin: reema, password: ibrahim123
+# user: testuser, pwd: 1234567890
+# user: testuser2, pwd:1234567890
+
 from django.contrib import admin
 from django.urls import path, include
 from claims.score import score_claim
@@ -26,6 +26,12 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
+)
+
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
 )
 
 urlpatterns = [
@@ -39,4 +45,8 @@ urlpatterns = [
     path("api/auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
     path("api-auth/", include("rest_framework.urls")),
+
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]

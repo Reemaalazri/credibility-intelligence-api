@@ -11,6 +11,12 @@ from rest_framework.permissions import IsAuthenticated
 
 from .throttles import ScoreRateThrottle
 
+from drf_spectacular.utils import extend_schema, OpenApiExample
+from .serializers import (
+    ScoreRequestSerializer,
+    ScoreResponseSerializer,
+    ErrorResponseSerializer,
+)
 
 def _to_100(x):
     return max(0, min(100, int(round(float(x) * 100))))
@@ -25,7 +31,38 @@ def _external_verdict(cred_score_100: int, conf_score_100: int) -> str:
         return "likely_false"
     return "disputed"
 
-
+@extend_schema(
+    request=ScoreRequestSerializer,
+    responses={
+        200: ScoreResponseSerializer,
+        400: ErrorResponseSerializer,
+        401: ErrorResponseSerializer,
+    },
+    description="Analyse the credibility of a claim and return a credibility/risk summary.",
+    examples=[
+        OpenApiExample(
+            "Score request example",
+            value={"text": "vaccines cause autism"},
+            request_only=True,
+        ),
+        OpenApiExample(
+            "Score response example",
+            value={
+                "claim": "vaccines cause autism",
+                "summary": {
+                    "final_verdict": "likely_false",
+                    "final_credibility_score": 18,
+                    "final_risk_score": 82,
+                    "final_confidence": 74,
+                },
+                "local_analysis": {},
+                "external_analysis": {},
+                "fusion": {},
+            },
+            response_only=True,
+        ),
+    ],
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @throttle_classes([ScoreRateThrottle])
