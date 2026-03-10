@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
-
+from .permissions import IsOwnerOrAdmin
 
 class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -73,7 +73,9 @@ class UserReportViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["create", "list", "retrieve"]:
             return [IsAuthenticated()]
-        return [IsAdminUser()]
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [IsOwnerOrAdmin()]
+        return [IsAuthenticated()]
 
 
 class RegisterView(generics.CreateAPIView):
