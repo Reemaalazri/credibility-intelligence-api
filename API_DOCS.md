@@ -26,6 +26,7 @@ Example request:
 `POST /api/auth/token/`
 
 Example response:
+
 ```json
 {
   "access": "jwt_access_token",
@@ -46,6 +47,7 @@ Protected endpoints require:
 Returns the main available API routes.
 
 Example response:
+
 ```json
 {
   "claims": "/api/claims/",
@@ -62,15 +64,21 @@ Example response:
 Returns a paginated list of claims.
 
 Supported query parameters:
+
 - search
+
 - label
+
 - ordering
+
 - page
 
 Example:
+
 `/api/claims/?search=vaccine`
 
 Example response structure:
+
 ```json
 {
   "count": 123,
@@ -93,6 +101,7 @@ Example response structure:
 Returns one claim by ID.
 
 Path parameter:
+
 - id (integer)
 
 `GET /api/claims/by-speaker/{speaker}/`
@@ -100,9 +109,11 @@ Path parameter:
 Returns claims matching a speaker.
 
 Path parameter:
+
 - speaker (string)
 
 Example:
+
 `/api/claims/by-speaker/trump/`
 
 ## 3. Reports Endpoints
@@ -115,8 +126,11 @@ Returns reports for the authenticated user.
 Admin users can view all reports.
 
 Supported query parameters:
+
 - status
+
 - risk_level
+
 - page
 
 `POST /api/reports/`
@@ -124,6 +138,7 @@ Supported query parameters:
 Creates a new report.
 
 Example request:
+
 ```json
 {
   "statement_text": "vaccines cause autism",
@@ -136,6 +151,7 @@ Example request:
 ```
 
 Example response:
+
 ```json
 {
   "id": 11,
@@ -154,6 +170,7 @@ Example response:
 Returns one report by ID.
 
 Path parameter:
+
 - id (integer)
 
 
@@ -166,6 +183,7 @@ Replaces an existing report.
 Partially updates an existing report.
 
 Example PATCH request:
+
 ```json
 {
   "status": "reviewed"
@@ -177,7 +195,9 @@ Example PATCH request:
 Deletes a report.
 
 Permissions:
+
 - users can manage their own reports
+
 - admins can manage all reports
 
 ## 4. Score Endpoint
@@ -188,6 +208,7 @@ This endpoint requires authentication.
 Analyses a claim and returns a credibility/risk result.
 
 Example request:
+
 ```json
 {
   "text": "vaccines cause autism"
@@ -195,6 +216,7 @@ Example request:
 ```
 
 Example response:
+
 ```json
 {
   "claim": "vaccines cause autism",
@@ -210,16 +232,25 @@ Example response:
 }
 ```
 ## Error Handling
+
 Common status codes:
+
 - 200 OK
+
 - 201 Created
+
 - 400 Bad Request
+
 - 401 Unauthorized
+
 - 403 Forbidden
+
 - 404 Not Found
+
 - 429 Too Many Requests
 
 Example custom error response:
+
 ```json
 {
   "error": "text is required"
@@ -227,6 +258,7 @@ Example custom error response:
 ```
 
 Example framework error response:
+
 ```json
 {
   "detail": "Authentication credentials were not provided."
