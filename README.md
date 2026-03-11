@@ -110,14 +110,15 @@ This model implements full CRUD functionality.
 ## Interface Preview
 (Screenshot of the web interface interacting with the API)
 
-## Requirements 
+## Requirements
+
 - Python 3.10+
 - pip
 - virtualenv
 
 ## Quick Start
 ```bash
-git clone https://github.com/YOUR_USERNAME/credibility-intelligence-api.git
+git clone https://github.com/Reemaalazri/credibility-intelligence-api.git
 cd credibility-intelligence-api
 
 python -m venv venv
@@ -130,8 +131,21 @@ python manage.py runserver
 ```
 
 Then open:
+
+API root
+
 ```http
 http://127.0.0.1:8000/api/
+```
+
+Swagger documentation
+```
+http://127.0.0.1:8000/api/schema/swagger-ui/
+```
+
+ReDoc documentation
+```
+http://127.0.0.1:8000/api/schema/redoc/
 ```
 
 **Clone the repository**
@@ -206,8 +220,13 @@ Request
 Response 
 ```json
 {
-"score": 78,
-"risk_level": "medium"
+"claim": "Vaccines cause autism",
+"summary": {
+  "final_verdict": "likely_false",
+  "final_credibility_score": 0,
+  "final_risk_score": 100,
+  "final_confidence": 56
+}
 }
 ```
 ### Reports (Authenticated)
@@ -271,23 +290,50 @@ The test suite verifies:
 - CRUD operations
 - API responses
 
+## Deployment
+The API is deployed on Render.
+
+Live backend API:
+
+```http
+https://credibility-intelligence-api.onrender.com/api/
+```
+
+Interactive API documentation:
+
+```http
+https://credibility-intelligence-api.onrender.com/api/schema/swagger-ui/
+```
+
+The system can be accessed directly through the deployed backend or via the frontend interface.
+
+The frontend interface communicates with the deployed backend API.
+
 ## Repository Structure
+
+Main Components: 
+
 ```
 credibility-intelligence-api/
 │
-├── claims/
-├── credibility_api/
-├── manage.py
+├── src/claims/                # dataset models, views and serializers
+├── src/credibility_api/       # Django project configuration
+├── frontend/                  # static web interface
+├── data/                      # LIAR dataset files
+├── src/manage.py
 ├── requirements.txt
 ├── README.md
-└── API_DOCS.md
+├── API_DOCS.md
+├── API_DOCS.pdf
+└── schema.yml
 ```
 
 ## Future Improvements
-- frontend interface for user interaction - next
-- data visualisation dashboards
-- machine learning credibility model
-- deployment to cloud platform
+- enhanced frontend interface and UI improvements
+- interactive data visualisation dashboards
+- machine learning credibility models
+- additional fact-checking data sources
+- improved external fact-check integration
 
 ## API Documentation
 Full API documentation is available here:
