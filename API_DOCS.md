@@ -6,9 +6,21 @@ Local development base URL:
 
 `http://127.0.0.1:8000`
 
+Deployed backend:
+
+`https://credibility-intelligence-api.onrender.com`
+
+Deployed frontend interacting with backend:
+
+`https://credibility-intelligence-frontend.onrender.com`
+
 ## Authentication
 
 The API uses JWT authentication for protected endpoints.
+
+Protected endpoints include `/api/reports/` and `/api/score`.
+
+Public endpoints include claims browsing and user registration/login.
 
 ### Register
 `POST /api/auth/register/`
@@ -44,7 +56,7 @@ Protected endpoints require:
 ## 1. API Root
 `GET /api/`
 
-Returns the main available API routes.
+Returns the main available API routes as URL strings.
 
 Example response:
 
@@ -65,13 +77,13 @@ Returns a paginated list of claims.
 
 Supported query parameters:
 
-- search
+- `search`
 
-- label
+- `label`
 
-- ordering
+- `ordering`
 
-- page
+- `page`
 
 Example:
 
@@ -81,19 +93,31 @@ Example response structure:
 
 ```json
 {
-  "count": 123,
-  "next": "http://127.0.0.1:8000/api/claims/?page=2",
+  "count": 18,
+  "next": http://127.0.0.1:8000/api/claims/?page=2,
   "previous": null,
   "results": [
     {
-      "id": 12790,
-      "liar_id": "example.json",
-      "label": "false",
-      "statement": "Vaccines cause autism",
-      "speaker": "example-speaker"
-    }
-  ]
-}
+      "url": "https://credibility-intelligence-api.onrender.com/api/claims/9906/",
+      "id": 9906,
+      "liar_id": "11222.json",
+      "label": "half-true",
+      "statement": "Rhode Island will become just the second state to mandate the vaccine and the only state to do so by regulatory fiat, without public debate, and without consideration from the elected representatives of the people.",
+      "subjects": "government-regulation,health-care",
+      "speaker": "rhode-island-center-freedom-and-prosperity",
+      "speaker_job_title": "",
+      "state": "Rhode Island",
+      "party": "organization",
+      "barely_true_count": 1,
+      "false_count": 0,
+      "half_true_count": 1,
+      "mostly_true_count": 0,
+      "pants_on_fire_count": 0,
+      "context": "news release",
+      "split": "train",
+      "created_at": "2026-03-10T17:27:15.720754Z"
+    },
+    {....}
 ```
 
 `GET /api/claims/{id}/`
@@ -103,6 +127,7 @@ Returns one claim by ID.
 Path parameter:
 
 - id (integer)
+
 
 `GET /api/claims/by-speaker/{speaker}/`
 
@@ -161,6 +186,8 @@ Example response:
   "risk_score": 78,
   "risk_level": "medium",
   "status": "open",
+  "created_at": "2026-03-11T03:41:00.268604Z",
+  "updated_at": "2026-03-11T03:41:00.268613Z",
   "user": 1
 }
 ```
@@ -178,6 +205,7 @@ Path parameter:
 
 Replaces an existing report.
 
+
 `PATCH /api/reports/{id}/`
 
 Partially updates an existing report.
@@ -189,6 +217,8 @@ Example PATCH request:
   "status": "reviewed"
 }
 ```
+
+Note: report status moderation is intended for administrator use. Creator of the claim can modify the other fields.
 
 `DELETE /api/reports/{id}/`
 
@@ -265,6 +295,13 @@ Example framework error response:
 }
 ```
 
+## Interactive Documentation
 
+Swagger UI:
+`api/schema/swagger-ui`
 
+ReDoc:
+`/api/schema/redoc`
 
+OpenAPI schema file:
+`schema.yml`
