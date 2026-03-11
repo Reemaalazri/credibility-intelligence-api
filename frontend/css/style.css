@@ -57,3 +57,48 @@ body {
   .section-box {
     margin-top: 1rem;
   }
+
+    body.dashboard-page {
+        font-family: Arial;
+        background:#f5f6fa;
+        text-align:center;
+    }
+
+    .dashboard-page h1{
+        margin-top:40px;
+        text-align: center;
+    }
+
+    .dashboard-page p{
+        text-align: center;
+    }
+
+    .dashboard-page .container{
+        margin-top:40px;
+        display:flex;
+        justify-content:center;
+        gap:30px;
+        flex-wrap:wrap;
+    }
+
+    .dashboard-page .card{
+        width:250px;
+        padding:25px;
+        background:white;
+        border-radius:10px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .dashboard-page .card h2{
+        margin-bottom:15px;
+    }
+
+    .dashboard-page .card a{
+        display:inline-block;
+        margin-top:10px;
+        padding:10px 15px;
+        background:#2f80ed;
+        color:white;
+        text-decoration:none;
+        border-radius:5px;
+    }
