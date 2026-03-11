@@ -301,10 +301,3 @@ class APISecurityTests(APITestCase):
 
         self.assertIn(self.report.id, returned_ids)
         self.assertNotIn(other_report.id, returned_ids)  # current self.report has no owner unless you update setup
-
-    def test_claim_statistics_endpoint(self):
-        response = self.client.get("/api/claims/statistics/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("total_claims", response.data)
-        self.assertIn("by_label", response.data)
-        self.assertIn("by_split", response.data)

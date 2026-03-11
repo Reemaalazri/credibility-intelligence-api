@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
 from .permissions import IsOwnerOrAdmin
-from django.db.models import Count
 
 
 class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
@@ -52,21 +51,6 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["get"], url_path="statistics")
-    def statistics(self, request):
-        total_claims = Claim.objects.count()
-
-        by_label_qs = Claim.objects.values("label").annotate(count=Count("label"))
-        by_split_qs = Claim.objects.values("split").annotate(count=Count("split"))
-
-        by_label = {item["label"]: item["count"] for item in by_label_qs}
-        by_split = {item["split"]: item["count"] for item in by_split_qs}
-
-        return Response({
-            "total_claims": total_claims,
-            "by_label": by_label,
-            "by_split": by_split,
-        })
 
 class UserReportViewSet(viewsets.ModelViewSet):
     """
