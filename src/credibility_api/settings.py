@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+# {"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3MzI4MTIzMSwiaWF0IjoxNzczMTk0ODMxLCJqdGkiOiJjY2ZkYWJkMWVhYTY0YWIxYTNiNWE2MmQzNDY5YjAwYiIsInVzZXJfaWQiOiI2In0.zbi5rKdzQ05P3e1PlK4RB24j-UCcVZBTo3XMIRz9RLo",
+# "access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzczMTk1MTMxLCJpYXQiOjE3NzMxOTQ4MzEsImp0aSI6ImE5YmIzNjhjNjk0MjQ4N2VhNDFmMDU2ZTA0MGYyZjhkIiwidXNlcl9pZCI6IjYifQ.GxYeE1MPyoA2hn9mk3TEETDbTRakvPWoHrfzZz0Q9vo"}%  
 from pathlib import Path
 import sys
 import os
