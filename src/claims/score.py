@@ -17,6 +17,8 @@ from .serializers import (
     ScoreResponseSerializer,
     ErrorResponseSerializer,
 )
+#STILL
+
 
 def _to_100(x):
     return max(0, min(100, int(round(float(x) * 100))))
@@ -30,6 +32,7 @@ def _external_verdict(cred_score_100: int, conf_score_100: int) -> str:
     if cred_score_100 <= 35:
         return "likely_false"
     return "disputed"
+
 
 @extend_schema(
     request=ScoreRequestSerializer,

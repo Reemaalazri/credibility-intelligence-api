@@ -14,21 +14,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# admin: reema, password: ibrahim123
-# user: testuser, pwd: 1234567890
-# user: testuser2, pwd:1234567890
-
 from django.contrib import admin
 from django.urls import path, include
 from claims.score import score_claim
 from claims.views import RegisterView
 from claims.home import home
+# JWT authentication endpoints
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
     TokenVerifyView,
 )
-
+# OpenAPI / Swagger documentation endpoints
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -41,14 +38,22 @@ urlpatterns = [
     path("api/", include("claims.urls")),
     path("api/score/", score_claim),
 
+    # User registration
     path("api/auth/register/", RegisterView.as_view(), name="auth-register"),
+    # JWT login (returns access and refresh tokens)
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    # Refresh expired access token
     path("api/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # Verify JWT token validity
     path("api/auth/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-
+    
+    # Login for Django REST Framework browsable API
     path("api-auth/", include("rest_framework.urls")),
 
+    # OpenAPI schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # Swagger interactive API documentation
     path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    # ReDoc API documentation
     path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]

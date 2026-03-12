@@ -1,4 +1,3 @@
-# from django.shortcuts import render
 from rest_framework import viewsets, filters, generics
 from .models import Claim, UserReport
 from .serializers import ClaimSerializer, UserReportSerializer, RegisterSerializer
@@ -16,10 +15,10 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
     Read-only endpoints for dataset claims.
     """
     queryset = Claim.objects.all()
-    # queryset = Claim.objects.all().order_by("id")
     serializer_class = ClaimSerializer
     permission_classes = [AllowAny]
 
+    # Enable filtering, search, and ordering on claim records
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -30,6 +29,7 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["id", "created_at", "speaker", "label"]
     ordering = ["-created_at"]
 
+    # Custom endpoint to retrieve claims by speaker name
     @action(detail=False, methods=["get"], url_path=r"by-speaker/(?P<speaker>[^/.]+)")
     def by_speaker(self, request, speaker=None):
         """
@@ -52,6 +52,7 @@ class ClaimViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
+# CRUD API endpoints for user-submitted reports
 class UserReportViewSet(viewsets.ModelViewSet):
     """
     CRUD endpoints for user reports.
@@ -62,6 +63,7 @@ class UserReportViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status", "risk_level"]
     ordering_fields = ["created_at", "risk_score"]
 
+    # Return all reports for admins, but only personal reports for normal users
     def get_queryset(self):
         if getattr(self, "swagger_fake_view", False):
             return UserReport.objects.none()
@@ -74,9 +76,11 @@ class UserReportViewSet(viewsets.ModelViewSet):
 
         return UserReport.objects.filter(user=self.request.user).order_by("-created_at")
 
+    # Automatically attach the logged-in user when creating a report
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    # Apply different permissions depending on the action being performed
     def get_permissions(self):
         if self.action in ["create", "list", "retrieve"]:
             return [IsAuthenticated()]
@@ -85,6 +89,7 @@ class UserReportViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
 
+# API endpoint for registering new users
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer

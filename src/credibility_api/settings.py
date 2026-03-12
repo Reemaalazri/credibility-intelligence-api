@@ -9,37 +9,61 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-# {"refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc3MzI4MTIzMSwiaWF0IjoxNzczMTk0ODMxLCJqdGkiOiJjY2ZkYWJkMWVhYTY0YWIxYTNiNWE2MmQzNDY5YjAwYiIsInVzZXJfaWQiOiI2In0.zbi5rKdzQ05P3e1PlK4RB24j-UCcVZBTo3XMIRz9RLo",
-# "access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzczMTk1MTMxLCJpYXQiOjE3NzMxOTQ4MzEsImp0aSI6ImE5YmIzNjhjNjk0MjQ4N2VhNDFmMDU2ZTA0MGYyZjhkIiwidXNlcl9pZCI6IjYifQ.GxYeE1MPyoA2hn9mk3TEETDbTRakvPWoHrfzZz0Q9vo"}%  
+
+# Standard Python and Django utilities used for:
+# - resolving project file paths
+# - accessing environment variables
+# - detecting test environments
+# - configuring the database using DATABASE_URL (used in deployment)
 from pathlib import Path
 import sys
 import os
 import dj_database_url
 
+
+# Detect when the project is running in test mode.
+# This allows certain features (such as API throttling) to be disabled
+# during automated tests so they do not interfere with test execution.
 TESTING = "test" in sys.argv
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+# BASE_DIR represents the root directory of the Django project.
+# It is used to construct absolute paths for files such as
+# the database, static files and templates.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
+# Secret key used by Django for cryptographic signing.
+# In production this is loaded from an environment variable
+# to avoid exposing sensitive security information in the codebase.
 SECRET_KEY = os.environ.get(
     "SECRET_KEY",
     "django-insecure-local-development-key-please-change-123456789"
 )
+
+# Debug mode controls whether detailed error pages are shown.
+# It should be enabled during development but disabled in production
+# for security reasons.
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
+
+# Specifies which host/domain names are allowed to serve this Django app.
+# This prevents HTTP Host header attacks.
+# The '.onrender.com' entry allows the API to run on the Render deployment platform.
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     ".onrender.com",
 ]
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
+    # Allows cross-origin requests from the frontend application
     "corsheaders",
+    # provides the Django REST Framework used to build the API
     "rest_framework",
+    # enables advanced query filtering for API endpoints
     "django_filters",
+    # the custom application containing claim models, scoring logic,
+    # dataset retrieval, and reporting functionality
     "claims",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -47,11 +71,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # generates OpenAPI/Swagger documentation for the API
     "drf_spectacular",
 ]
 
+# Middleware components process requests and responses globally.
+# These handle security, session management, authentication,
+# CORS policy handling, and static file serving.
 MIDDLEWARE = [
+    # Allows requests from external frontends (e.g. the React frontend).
     "corsheaders.middleware.CorsMiddleware",
+    # Serves static files efficiently in production environments.
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -64,6 +94,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "credibility_api.urls"
 
+# Template configuration used for rendering HTML pages.
+# While the project is primarily an API, templates allow
+# the Django REST Framework browsable API interface to work.
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -85,7 +118,10 @@ WSGI_APPLICATION = "credibility_api.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-
+# The project uses SQLite for local development.
+# During deployment, dj_database_url allows the database
+# to be configured via a DATABASE_URL environment variable,
+# which supports PostgreSQL or other production databases.
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -132,6 +168,10 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Django REST Framework configuration.
+# These settings control authentication, permissions,
+# pagination, filtering, rate limiting and schema generation
+# for all API endpoints.
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
@@ -152,6 +192,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
 
+    # Rate limiting protects the API from abuse by restricting
+    # how many requests a client can make within a time window.
+    # Throttling is disabled during automated tests.
     "DEFAULT_THROTTLE_CLASSES": [] if TESTING else [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
@@ -174,14 +217,22 @@ SPECTACULAR_SETTINGS = {
 LOGIN_REDIRECT_URL = "/api/"
 LOGOUT_REDIRECT_URL = "/api/"
 
+# Allows cross-origin requests to the API.
+# This is required for the frontend application to communicate
+# with the backend API from a different domain.
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Explicit list of frontend domains permitted to access the API.
+# Includes both local development environments and the deployed frontend.
 CORS_ALLOWED_ORIGINS = [
     "https://credibility-intelligence-frontend.onrender.com",
     "http://127.0.0.1:5500",
     "http://localhost:5500",
 ]
 
+# Trusted domains allowed to perform cross-site requests
+# when CSRF protection is enabled.
+# Required for deployed environments such as Render.
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
 ]

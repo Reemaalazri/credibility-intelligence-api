@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 class Claim(models.Model):
 
     # LIAR dataset claim record (TSV columns 1–14) + split.
-
     class Split(models.TextChoices):
         TRAIN = "train", "Train"
         VALID = "valid", "Validation"
@@ -80,14 +79,14 @@ class Claim(models.Model):
         help_text="Party affiliation (may be empty, e.g., republican/democrat/none).",
     )
 
-    # Columns 9–13: credit history counts
+    # Columns 9–13: speaker's historical truthfulness counts from the dataset
     barely_true_count = models.PositiveIntegerField(default=0)
     false_count = models.PositiveIntegerField(default=0)
     half_true_count = models.PositiveIntegerField(default=0)
     mostly_true_count = models.PositiveIntegerField(default=0)
     pants_on_fire_count = models.PositiveIntegerField(default=0)
 
-    # Column 14: context (venue/location)
+    # Column 14: Dataset context describing where the claim was made
     context = models.CharField(
         max_length=255,
         blank=True,
@@ -103,11 +102,14 @@ class Claim(models.Model):
         help_text="Dataset split (train/valid/test).",
     )
 
+    # Dataset context describing where the claim was made
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # String representation shown in Django admin
     def __str__(self) -> str:
         return f"{self.liar_id} [{self.label}]"
 
+    # String representation shown in Django admin
     @property
     def total_history(self) -> int:
         """Total credit history counts (cols 9–13)."""
@@ -121,6 +123,7 @@ class Claim(models.Model):
 
 
 class UserReport(models.Model):
+    # Optional link to the user who submitted the report
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -129,33 +132,42 @@ class UserReport(models.Model):
         blank=True,
     )
 
+    # Status of the report in the moderation workflow
     class Status(models.TextChoices):
         OPEN = "open", "Open"
         REVIEWED = "reviewed", "Reviewed"
         RESOLVED = "resolved", "Resolved"
 
+    # Risk classification assigned after credibility analysis
     class RiskLevel(models.TextChoices):
         LOW = "low", "Low"
         MEDIUM = "medium", "Medium"
         HIGH = "high", "High"
         UNKNOWN = "unknown", "Unknown"
 
+    # Claim text submitted by the user
     statement_text = models.TextField()
+    # Optional speaker associated with the claim
     speaker = models.CharField(max_length=100, blank=True, default="")
+    # Explanation of why the claim was reported
     report_reason = models.TextField(blank=True, default="")
 
-    # Filled by scoring logic later (start simple now)
+    # Explanation of why the claim was reported
     risk_score = models.FloatField(default=0.0)
+    # Risk category derived from the risk score
     risk_level = models.CharField(
         max_length=10, choices=RiskLevel.choices, default=RiskLevel.UNKNOWN
     )
 
+    # Risk category derived from the risk score
     status = models.CharField(
         max_length=10, choices=Status.choices, default=Status.OPEN
     )
 
+    # Current moderation status of the report
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Display format for reports in Django admin
     def __str__(self) -> str:
         return f"Report #{self.id} ({self.status})"

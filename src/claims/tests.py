@@ -1,14 +1,14 @@
 from unittest.mock import patch
-
 from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.test import APITestCase
-
 from .models import Claim, UserReport
 
 
+# Tests API security, authentication, permissions, filtering, and scoring behaviour
 class APISecurityTests(APITestCase):
     def setUp(self):
+        # Create test users and sample claim/report data used across all test cases
         self.user = User.objects.create_user(
             username="normaluser",
             password="TestPass123!"
@@ -47,6 +47,7 @@ class APISecurityTests(APITestCase):
             status="open",
         )
 
+    # Helper method for authenticating a test user with JWT
     def authenticate_user(self, username="normaluser", password="TestPass123!"):
         response = self.client.post(
             "/api/auth/token/",
@@ -57,6 +58,7 @@ class APISecurityTests(APITestCase):
         token = response.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
 
+    # Tests that LIAR dataset claim endpoints remain publicly accessible
     # -------------------------
     # Public claims endpoints
     # -------------------------
@@ -72,6 +74,7 @@ class APISecurityTests(APITestCase):
         response = self.client.get("/api/claims/by-speaker/test-speaker/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    # Tests report CRUD permissions for authenticated users, owners, and admins
     # -------------------------
     # Reports permissions / CRUD
     # -------------------------
@@ -150,6 +153,7 @@ class APISecurityTests(APITestCase):
         response = self.client.delete(f"/api/reports/{self.report.id}/")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    # Tests validation, authentication, and response structure of the scoring endpoint
     # -------------------------
     # Score endpoint permissions / validation
     # -------------------------
@@ -212,6 +216,7 @@ class APISecurityTests(APITestCase):
         response = self.client.post("/api/score/", {"text": ""}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    # Tests JWT token generation and invalid login handling
     # -------------------------
     # JWT auth
     # -------------------------
@@ -233,6 +238,7 @@ class APISecurityTests(APITestCase):
         )
         self.assertIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
 
+    # Test filtering, searching, ordering and pagination
     def test_claims_filter_by_label(self):
         response = self.client.get("/api/claims/?label=false")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -254,6 +260,7 @@ class APISecurityTests(APITestCase):
         response = self.client.get("/api/claims/by-speaker/test-speaker/?label=false")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    # Test user registration
     def test_register_user(self):
         response = self.client.post(
             "/api/auth/register/",
@@ -280,6 +287,7 @@ class APISecurityTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["user"], self.user.id)
 
+    # Test Report ownership
     def test_user_only_sees_own_reports(self):
         other_user = User.objects.create_user(username="otheruser", password="OtherPass123!")
         other_report = UserReport.objects.create(
@@ -300,4 +308,5 @@ class APISecurityTests(APITestCase):
         returned_ids = [item["id"] for item in response.data["results"]] if "results" in response.data else [item["id"] for item in response.data]
 
         self.assertIn(self.report.id, returned_ids)
-        self.assertNotIn(other_report.id, returned_ids)  # current self.report has no owner unless you update setup
+        # current self.report has no owner unless you update setup
+        self.assertNotIn(other_report.id, returned_ids)
