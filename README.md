@@ -22,6 +22,22 @@ The API enables users to:
 
 The system follows a RESTful architecture, returning structured JSON responses and using standard HTTP status codes.
 
+## Live Demo
+Live API:
+
+```http
+https://credibility-intelligence-api.onrender.com/api/
+```
+
+Live API with frontend
+```http
+https://credibility-intelligence-frontend.onrender.com 
+```
+
+Swagger Documentation:
+```http
+https://credibility-intelligence-api.onrender.com/api/schema/swagger-ui/
+```
 ## Features
 - RESTful API architecture using Django REST Framework
 - Public claims dataset with filtering, search and pagination
@@ -72,9 +88,7 @@ The dataset was preprocessed and imported into the SQLite database using a custo
 
 ### Dataset Source
 
-Wang, W. Y. (2017). “Liar, Liar Pants on Fire: A New Benchmark Dataset for Fake News Detection.” Proceedings of the Annual Meeting of the Association for Computational Linguistics (ACL).
-
-Dataset available from: https://www.cs.ucsb.edu/~william/data/liar_dataset.zip
+Wang, W.Y., 2017. "Liar, Liar Pants on Fire": A New Benchmark Dataset for Fake News Detection. In: Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers). Vancouver, Canada, 30 July - 4 August 2017. Stroudsburg: Association for Computational Linguistics, pp.422-426. Kaggle dataset: https://www.kaggle.com/datasets/doanquanvietnamca/liar-dataset 
 
 ## API Architecture
 The system contains three main functional components.
@@ -116,29 +130,76 @@ This model implements full CRUD functionality.
 - pip
 - virtualenv
 
-## Quick Start
+## Installation and Setup
+
+Follow these steps to run the project locally.
+
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/Reemaalazri/credibility-intelligence-api.git
 cd credibility-intelligence-api
+```
 
+### 2. Create a virtual environment
+
+```bash
 python -m venv venv
+```
+
+Mac/Linux
+
+```bash
 source venv/bin/activate
+```
 
+Windows
+```bash
+venv\Scripts\activate 
+``` 
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
+### 4. Apply database migrations
+
+```bash 
 python manage.py migrate
+```
+
+### 5. Import the dataset
+
+The project includes a dataset import script which loads the LIAR dataset into the database.
+
+```bash 
+python manage.py import_dataset
+```
+
+### 6. (Optional) Create an admin account
+
+```bash
+python manage.py createsuperuser
+```
+
+### 7. Run the development server
+
+```bash
 python manage.py runserver
 ```
 
-Then open:
-
-API root
+The API will be available at:
 
 ```http
 http://127.0.0.1:8000/api/
 ```
 
-Swagger documentation
+## API Documentation (Local)
+When the server is running, interactive documentation is available at:
+
+Swagger UI
 ```
 http://127.0.0.1:8000/api/schema/swagger-ui/
 ```
@@ -147,18 +208,6 @@ ReDoc documentation
 ```
 http://127.0.0.1:8000/api/schema/redoc/
 ```
-
-**Clone the repository**
-
-**Create virtual environment**
-
-**Install dependencies**
-
-**Run database migrations**
-
-**Run the development server**
-
-**Access the API**
 
 ## Authentication
 The API uses JWT authentication.
