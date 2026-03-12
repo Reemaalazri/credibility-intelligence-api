@@ -1,3 +1,4 @@
+// This file allows authenticated users to create, edit, view, and delete their own misinformation reports through the frontend.
 let editingReportId = null;
 let currentReports = [];
 

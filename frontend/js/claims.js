@@ -1,3 +1,4 @@
+// This file loads and displays claims from the API, with support for search, filtering, ordering, and speaker-based lookup.
 document.addEventListener("DOMContentLoaded", () => {
     updateNavbar();
     bindLogoutButtons();

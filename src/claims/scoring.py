@@ -2,14 +2,12 @@ import re
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Dict, List, Tuple
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 from .models import Claim
-# STILL
 
 
+# Map LIAR dataset labels to numerical credibility signals.
 LABEL_TO_SIGNAL = {
     "true": 1.00,
     "mostly-true": 0.70,
@@ -21,6 +19,7 @@ LABEL_TO_SIGNAL = {
     "pants-on-fire": -1.00,
 }
 
+# Define word sets used for linguistic analysis.
 NEG_WORDS = {
     "not", "no", "never", "none", "cannot", "can't",
     "dont", "don't", "doesnt", "doesn't", "isnt", "isn't",
@@ -48,6 +47,7 @@ INVERSION_PHRASES = [
     "not true that",
 ]
 
+# Keywords used to increase misinformation risk scores.
 RISK_KEYWORDS_HIGH = [
     "hoax", "conspiracy", "secretly", "fake", "fraud",
     "rigged", "stolen", "coverup", "scam"
@@ -59,6 +59,7 @@ RISK_KEYWORDS_MED = [
 ]
 
 
+# Data structure representing a matched claim from the dataset.
 @dataclass(frozen=True)
 class Match:
     claim_id: int
@@ -73,6 +74,7 @@ class Match:
     topic_score: float
 
 
+# Basic tokenization utilities used for text comparison.
 def _tokens(text: str) -> List[str]:
     return re.findall(r"[a-z']+", (text or "").lower())
 
@@ -85,6 +87,7 @@ def _has_negation(text: str) -> bool:
     return any(t in NEG_WORDS for t in _tokens(text))
 
 
+# Compute topic similarity between two statements.
 def _topic_match(a: str, b: str) -> float:
     ta = set(_content_tokens(a))
     tb = set(_content_tokens(b))
@@ -102,12 +105,14 @@ def _has_inversion_phrase(text: str) -> bool:
     return any(p in lower for p in INVERSION_PHRASES)
 
 
+# Convert dataset label into credibility signal.
 def _label_signal(label: str) -> float:
     if not label:
         return 0.0
     return LABEL_TO_SIGNAL.get(label.strip().lower(), 0.0)
 
 
+# Adjust credibility signal based on stance orientation.
 def _oriented_signal(label: str, stance: str) -> float:
     signal = _label_signal(label)
 
@@ -118,6 +123,7 @@ def _oriented_signal(label: str, stance: str) -> float:
     return 0.0
 
 
+# Classify whether evidence supports or refutes the input claim.
 def _classify_stance(query: str, evidence: str, sim: float) -> Tuple[str, float]:
     overlap = _topic_match(query, evidence)
     neg_q = _has_negation(query)
@@ -145,6 +151,7 @@ def _classify_stance(query: str, evidence: str, sim: float) -> Tuple[str, float]
     return "unrelated", 0.20
 
 
+# Build and cache the TF-IDF index of claims from the dataset.
 @lru_cache(maxsize=1)
 def _build_index():
     rows = []
@@ -177,6 +184,7 @@ def _build_index():
     return vectorizer, matrix, rows
 
 
+# Main scoring function that retrieves evidence and computes credibility scores.
 def score_text(text: str, request=None, top_k: int = 6) -> Dict:
     text = (text or "").strip()
     if not text:
@@ -220,7 +228,7 @@ def score_text(text: str, request=None, top_k: int = 6) -> Dict:
         if shared_tokens < 2:
             continue
 
-        stance, stance_score = _classify_stance(text, evidence_text, sim) 
+        stance, stance_score = _classify_stance(text, evidence_text, sim)
 
         # only keep strong support/refute evidence
         if stance == "unrelated":
@@ -365,6 +373,7 @@ def score_text(text: str, request=None, top_k: int = 6) -> Dict:
     }
 
 
+# Utility function to rebuild the TF-IDF index when dataset changes.
 def rebuild_index():
     _build_index.cache_clear()
     _build_index()

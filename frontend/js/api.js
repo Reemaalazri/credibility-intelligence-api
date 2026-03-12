@@ -1,3 +1,4 @@
+// This file provides reusable frontend helper functions for API requests, token storage, authentication headers, and admin state management.
 const API_BASE = "https://credibility-intelligence-api.onrender.com";
 
 function getAccessToken() {

@@ -1,3 +1,4 @@
+// This file manages frontend authentication behaviour by updating the navigation bar and handling user logout actions.
 document.addEventListener("DOMContentLoaded", () => {
     updateNavbar();
     bindLogoutButtons();

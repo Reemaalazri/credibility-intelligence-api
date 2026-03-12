@@ -3,8 +3,9 @@ import re
 import urllib.parse
 import urllib.request
 from typing import Dict, List, Optional
-# Still
 
+
+# Map textual fact-check ratings into numerical credibility signals.
 RATING_TO_SIGNAL = {
     "true": 1.00,
     "mostly true": 0.70,
@@ -28,11 +29,13 @@ RATING_TO_SIGNAL = {
     "flawed": -0.60,
 }
 
+# List of negation words used to detect contradictory claims.
 NEG_WORDS = {
     "not", "no", "never", "none", "cannot", "can't",
     "dont", "don't", "doesnt", "doesn't", "isnt", "isn't"
 }
 
+# Stop-like words removed when extracting meaningful tokens.
 STOPLIKE = {
     "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
     "of", "in", "on", "at", "to", "for", "from", "by", "with", "about",
@@ -41,18 +44,22 @@ STOPLIKE = {
 }
 
 
+# Tokenize text into lowercase word tokens.
 def _tokens(text: str) -> List[str]:
     return re.findall(r"[a-z']+", (text or "").lower())
 
 
+# Extract meaningful tokens by removing stop-like words.
 def _content_tokens(text: str) -> set[str]:
     return {t for t in _tokens(text) if t not in STOPLIKE}
 
 
+# Detect whether the sentence contains a negation word.
 def _has_negation(text: str) -> bool:
     return any(t in NEG_WORDS for t in _tokens(text))
 
 
+# Convert a textual fact-check rating into a credibility signal.
 def _rating_to_signal(textual_rating: Optional[str]) -> float:
     if not textual_rating:
         return 0.0
@@ -64,6 +71,7 @@ def _rating_to_signal(textual_rating: Optional[str]) -> float:
         if key in r:
             return score
 
+    # Fallback patterns when no direct rating mapping is found.
     negative_patterns = [
         "abundant evidence",
         "incorrect",
@@ -93,6 +101,7 @@ def _rating_to_signal(textual_rating: Optional[str]) -> float:
     return 0.0
 
 
+# Compute a relevance score between the query and fact-checked claim text.
 def _relevance_score(query: str, claim_text: str) -> float:
     q = _content_tokens(query)
     c = _content_tokens(claim_text)
@@ -103,12 +112,14 @@ def _relevance_score(query: str, claim_text: str) -> float:
     inter = len(q & c)
     base = inter / max(1, len(q))
 
+    # Reduce relevance if negation polarity differs.
     if base >= 0.25 and (_has_negation(query) != _has_negation(claim_text)):
         base *= 0.85
 
     return min(1.0, base)
 
 
+# Classify whether the fact-checked claim supports or refutes the query.
 def _classify_external_stance(query: str, claim_text: str) -> tuple[str, float]:
     q_tokens = _content_tokens(query)
     c_tokens = _content_tokens(claim_text)
@@ -127,6 +138,7 @@ def _classify_external_stance(query: str, claim_text: str) -> tuple[str, float]:
     return "supports", min(0.95, 0.55 + overlap)
 
 
+# Query the Google Fact Check Tools API and aggregate credibility signals.
 def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dict:
     params = {
         "query": query,
@@ -136,6 +148,7 @@ def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dic
 
     url = "https://factchecktools.googleapis.com/v1alpha1/claims:search?" + urllib.parse.urlencode(params)
 
+    # Send the API request and parse the JSON response.
     with urllib.request.urlopen(url, timeout=20) as resp:
         data = json.loads(resp.read().decode("utf-8"))
 
@@ -146,12 +159,13 @@ def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dic
     abs_signal_sum = 0.0
     weight_total = 0.0
 
+    # Process returned fact-check claims and compute weighted signals.
     for claim in raw_claims:
         claim_text = claim.get("text", "") or ""
         relevance = _relevance_score(query, claim_text)
         stance, stance_score = _classify_external_stance(query, claim_text)
 
-        # drop weak / unrelated fact-check claims
+        # Drop weak or unrelated fact-check results.
         if relevance < 0.30:
             continue
 
@@ -173,7 +187,7 @@ def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dic
 
             signal = _rating_to_signal(textual_rating)
 
-            # remove neutral reviews
+            # Remove neutral or weak signals.
             if abs(signal) < 0.15:
                 continue
 
@@ -199,6 +213,7 @@ def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dic
                 }
             )
 
+    # Rank fact-checks by relevance, stance strength, and signal magnitude.
     normalized.sort(
         key=lambda x: (x["relevance"], x["stance_score"], abs(x["signal"])),
         reverse=True
@@ -206,6 +221,7 @@ def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dic
 
     top_fact_checks = normalized[:3]
 
+    # Aggregate the final external credibility and confidence scores.
     if weight_total > 0:
         external_signal = signal_sum / weight_total
         external_signal = max(-1.0, min(1.0, external_signal))
@@ -223,6 +239,7 @@ def search_google_factcheck(query: str, api_key: str, page_size: int = 5) -> Dic
         external_cred = 0.5
         confidence = 0.0
 
+    # Return normalized credibility results and top fact-checks.
     return {
         "external_credibility_score": round(external_cred, 3),
         "external_risk_score": int(round((1.0 - external_cred) * 100)),

@@ -1,3 +1,4 @@
+// This file handles the admin reports page by loading all submitted reports and allowing admins to review, resolve, or delete them.
 document.addEventListener("DOMContentLoaded", () => {
     updateNavbar();
     bindLogoutButtons();

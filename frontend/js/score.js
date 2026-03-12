@@ -1,3 +1,4 @@
+// This file handles claim scoring by submitting user input to the score endpoint and displaying the credibility analysis results.
 document.addEventListener("DOMContentLoaded", () => {
     updateNavbar();
     bindLogoutButtons();
