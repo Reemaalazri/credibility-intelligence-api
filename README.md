@@ -38,6 +38,10 @@ Swagger Documentation:
 ```http
 https://credibility-intelligence-api.onrender.com/api/schema/swagger-ui/
 ```
+
+PDF API Documentation:
+[API Documentation (PDF)](API_DOCS.pdf)
+
 ## Features
 - RESTful API architecture using Django REST Framework
 - Public claims dataset with filtering, search and pagination
@@ -372,7 +376,6 @@ credibility-intelligence-api/
 ├── src/manage.py
 ├── requirements.txt
 ├── README.md
-├── API_DOCS.md
 ├── API_DOCS.pdf
 └── schema.yml
 ```
@@ -385,9 +388,16 @@ credibility-intelligence-api/
 - improved external fact-check integration
 
 ## API Documentation
-Full API documentation is available here:
-- [API Documentation (Markdown)](API_DOCS.md)
-- [API Documentation (PDF)](API_DOCS.pdf)
+
+The API documentation is generated automatically from the OpenAPI specification.
+
+Available documentation resources include:
+
+- **Swagger UI** – Interactive interface for exploring endpoints and testing API requests.
+- **ReDoc** – Structured reference view of the API specification.
+- **Swagger Documentation (PDF)** – Exported PDF version of the OpenAPI documentation for offline review.
+
+[API Documentation (PDF)](API_DOCS.pdf)
 
 A generated OpenAPI schema is also included:
 - [OpenAPI Schema](schema.yml)
